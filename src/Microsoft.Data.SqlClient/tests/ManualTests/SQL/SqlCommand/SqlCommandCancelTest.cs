@@ -23,7 +23,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             PlainCancel(tcp_connStr);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void PlainCancelTestNP()
         {
@@ -31,13 +31,13 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
         
         // Synapse: Remove dependency on Northwind database + WAITFOR not supported + ';' not supported
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void PlainMARSCancelTest()
         {
             PlainCancel((new SqlConnectionStringBuilder(tcp_connStr) { MultipleActiveResultSets = true }).ConnectionString);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void PlainMARSCancelTestNP()
         {
@@ -51,7 +51,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             PlainCancelAsync(tcp_connStr);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void PlainCancelTestAsyncNP()
         {
@@ -59,13 +59,13 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         // Synapse: Remove dependency from Northwind database + WAITFOR not supported + ';' not supported.
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void PlainMARSCancelTestAsync()
         {
             PlainCancelAsync((new SqlConnectionStringBuilder(tcp_connStr) { MultipleActiveResultSets = true }).ConnectionString);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void PlainMARSCancelTestAsyncNP()
         {
@@ -129,7 +129,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             MultiThreadedCancel(tcp_connStr, false);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void MultiThreadedCancel_NonAsyncNP()
         {
@@ -143,7 +143,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             MultiThreadedCancel(tcp_connStr, true);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void MultiThreadedCancel_AsyncNP()
         {
@@ -158,7 +158,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         [ActiveIssue("12167")]
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void TimeoutCancelNP()
         {
@@ -171,7 +171,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             CancelAndDisposePreparedCommand(tcp_connStr);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void CancelAndDisposePreparedCommandNP()
         {
@@ -179,14 +179,14 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         [ActiveIssue("5541")]
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         public static void TimeOutDuringRead()
         {
             TimeOutDuringRead(tcp_connStr);
         }
 
         [ActiveIssue("5541")]
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void TimeOutDuringReadNP()
         {
@@ -200,7 +200,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             CancelDoesNotWait(tcp_connStr);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void CancelDoesNotWaitNP()
         {
@@ -214,7 +214,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             AsyncCancelDoesNotWait(tcp_connStr).Wait();
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void AsyncCancelDoesNotWaitNP()
         {
@@ -227,7 +227,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             CancelFollowedByTransaction(tcp_connStr);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void NPAttentionPacketTestTransaction()
         {
@@ -240,7 +240,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             CancelFollowedByAlert(tcp_connStr);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void NPAttentionPacketTestAlerts()
         {

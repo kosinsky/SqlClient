@@ -10,7 +10,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
     public static class SqlNamedPipesTest
     {
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)] // Named pipes with the given input strings are not supported on Unix
         public static void ValidConnStringTest()
         {
