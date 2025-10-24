@@ -107,6 +107,20 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
+        // Fabric DW EngineEditionId == 11
+        public static bool IsFabricDW
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(TCPConnectionString))
+                {
+                    s_sqlServerEngineEdition ??= GetSqlServerProperty(TCPConnectionString, "EngineEdition");
+                }
+                _ = int.TryParse(s_sqlServerEngineEdition, out int engineEditon);
+                return engineEditon == 11;
+            }
+        }
+
         public static bool TcpConnectionStringDoesNotUseAadAuth
         {
             get
@@ -401,8 +415,11 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
         public static bool IsNotManagedInstance() => !IsManagedInstance;
 
+
+        public static bool IsNotFabricDW() => !IsFabricDW;
+
         // Synapse: UDT Test Database not compatible with Azure Synapse.
-        public static bool IsUdtTestDatabasePresent() => IsDatabasePresent(UdtTestDbName) && IsNotAzureSynapse();
+        public static bool IsUdtTestDatabasePresent() => IsDatabasePresent(UdtTestDbName) && IsNotAzureSynapse() && IsNotFabricDW();
 
         public static bool AreConnStringsSetup()
         {
@@ -691,6 +708,12 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         /// </returns>
         public static string GetLongName(string prefix, bool withBracket = true)
         {
+            if (IsFabricDW && prefix.StartsWith("##"))
+            {
+                // Fabric DW does not support global temporary tables.
+                prefix = prefix.Substring(1);
+            }
+
             StringBuilder name = new(96);
 
             if (withBracket)
