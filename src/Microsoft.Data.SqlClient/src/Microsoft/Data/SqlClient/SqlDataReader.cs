@@ -4321,7 +4321,7 @@ namespace Microsoft.Data.SqlClient
                         return result;
                     }
                 }
-                if (b == TdsEnums.SQLINFO)
+                while (b == TdsEnums.SQLINFO)
                 {
                     try
                     {
@@ -4420,7 +4420,7 @@ namespace Microsoft.Data.SqlClient
                                 return result;
                             }
                         }
-                        if (b == TdsEnums.SQLINFO)
+                        while (b == TdsEnums.SQLINFO)
                         {
                             // VSTFDEVDIV713926
                             // We are accumulating informational events and fire them at next

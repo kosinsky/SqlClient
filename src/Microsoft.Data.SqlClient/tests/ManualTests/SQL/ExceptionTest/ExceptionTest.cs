@@ -131,6 +131,60 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             sqlConnection.Close();
         }
 
+        [ConditionalTheory(typeof(DataTestUtility), nameof(DataTestUtility.IsFabricDW))]
+        [InlineData(false)]
+        [InlineData(true)]
+        public static void WarningsAfterRowsTest(bool useSnapshot)
+        {
+            int warningsReceived = 0;
+            bool hasStatementIdWarning = false;
+            bool hasTimestampWarning = false;
+            Action<object, SqlInfoMessageEventArgs> warningCallback =
+                (object sender, SqlInfoMessageEventArgs imevent) =>
+                {
+                    warningsReceived += imevent.Errors.Count;
+                    for (int i = 0; i < imevent.Errors.Count; i++)
+                    {
+                        Console.WriteLine(imevent.Errors[i].Message);
+                        hasStatementIdWarning |= imevent.Errors[i].Message.Contains("Statement ID:");
+                        hasTimestampWarning |= imevent.Errors[i].Message.Contains("The current version of data being accessed in");
+                    }
+                };
+
+            SqlInfoMessageEventHandler handler = new SqlInfoMessageEventHandler(warningCallback);
+            SqlConnection sqlConnection = new SqlConnection(DataTestUtility.TCPConnectionString);
+            sqlConnection.InfoMessage += handler;
+            sqlConnection.Open();
+
+            string db = string.Empty;
+            if (useSnapshot)
+            {
+                SqlCommand getSnapshotNameCmdText = new SqlCommand("SELECT TOP 1 name FROM sys.databases WHERE source_database_id=DB_ID()", sqlConnection);
+                db = getSnapshotNameCmdText.ExecuteScalar().ToString();
+                Assert.False(string.IsNullOrEmpty(db), "FAILED: Could not retrieve snapshot database name.");
+                db += ".";
+            }
+
+            SqlCommand cmd = new SqlCommand($"select count(*) from {db}dbo.orders", sqlConnection);
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
+                Assert.True(reader.HasRows, "FAILED: SqlDataReader.HasRows is not correct (should be TRUE)");
+                bool receivedRows = false;
+                while (reader.Read())
+                {
+                    receivedRows = true;
+                }
+                Assert.Equal(useSnapshot ? 2: 1, warningsReceived);
+                Assert.True(receivedRows, "FAILED: Should have received rows from this query.");
+                Assert.True(hasStatementIdWarning, "FAILED: Should have received statement ID warning from this query");
+                if (useSnapshot)
+                { 
+                    Assert.True(hasTimestampWarning, "FAILED: Should have received timestamp warning from this query");
+                }
+            }
+            sqlConnection.Close();
+        }
+
         private static bool CheckThatExceptionsAreDistinctButHaveSameData(SqlException e1, SqlException e2)
         {
             Assert.True(e1 != e2, "FAILED: verification of exception cloning in subsequent connection attempts");
