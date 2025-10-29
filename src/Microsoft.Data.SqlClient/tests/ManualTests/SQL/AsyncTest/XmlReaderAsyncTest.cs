@@ -16,7 +16,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             "SELECT * from dbo.Customers FOR XML AUTO, XMLDATA;";
 
         // Synapse: Parse error at line: 1, column: 29: Incorrect syntax near 'FOR'.
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void ExecuteTest()
         {
             using (SqlConnection connection = new SqlConnection(DataTestUtility.TCPConnectionString))
@@ -41,7 +41,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         // Synapse: Northwind dependency + Parse error at line: 1, column: 29: Incorrect syntax near 'FOR'.
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void ExceptionTest()
         {
             using (SqlConnection connection = new SqlConnection(DataTestUtility.TCPConnectionString))
@@ -71,7 +71,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         // Synapse: Parse error at line: 1, column: 29: Incorrect syntax near 'FOR'.
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static async Task MoveToContentAsyncTest()
         {
             using (SqlConnection connection = new SqlConnection(DataTestUtility.TCPConnectionString))
