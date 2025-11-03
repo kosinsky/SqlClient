@@ -299,6 +299,7 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                     decimal m;
                     string s = null;
                     int i;
+                    long l;
 
                     // read data out of buffer
                     v = rdr.GetValue(0);
@@ -314,7 +315,14 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                     v = rdr.GetValue(5);
                     d = (DateTime)v;
                     v = rdr.GetValue(6);
-                    i = (int)v;
+                    if (DataTestUtility.IsFabricDW)
+                    {
+                        l = (long)v;
+                    }
+                    else
+                    {
+                        i = (int)v;
+                    }
                     v = rdr.GetValue(7);
                     m = (decimal)v;
                     v = rdr.GetValue(8);
@@ -350,6 +358,7 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                     decimal m;
                     string s = null;
                     int i;
+                    long l;
 
                     // read data out of buffer
                     i = rdr.GetInt32(0); //order id
@@ -358,7 +367,14 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                     d = rdr.GetDateTime(3); //OrderDate
                     d = rdr.GetDateTime(4); //RequiredDate
                     d = rdr.GetDateTime(5); //ShippedDate;
-                    i = rdr.GetInt32(6); //ShipVia;
+                    if (DataTestUtility.IsFabricDW)
+                    {
+                        l = rdr.GetInt64(6); //ShipVia;
+                    }
+                    else
+                    {
+                        i = rdr.GetInt32(6); //ShipVia;
+                    }
                     m = rdr.GetDecimal(7); //Freight;
                     s = rdr.GetString(8); //ShipName;
                     s = rdr.GetString(9); //ShipAddres;
@@ -404,7 +420,14 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                         rdr.GetFieldValue<DateTime>(4); //RequiredDate
                     }
                     rdr.GetFieldValue<DateTime>(5); //ShippedDate;
-                    rdr.GetFieldValue<int>(6); //ShipVia;
+                    if (DataTestUtility.IsNotFabricDW())
+                    {
+                        rdr.GetFieldValue<int>(6); //ShipVia;
+                    }
+                    else
+                    {
+                        rdr.GetFieldValue<long>(6); //ShipVia;
+                    }
                     rdr.GetFieldValue<decimal>(7); //Freight;
                     rdr.GetFieldValue<string>(8); //ShipName;
                     rdr.GetFieldValue<SqlString>(9); //ShipAddres;
@@ -438,7 +461,14 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                         rdr.GetFieldValueAsync<DateTime>(4).Wait(); //RequiredDate
                     }
                     rdr.GetFieldValueAsync<DateTime>(5).Wait(); //ShippedDate;
-                    rdr.GetFieldValueAsync<int>(6).Wait(); //ShipVia;
+                    if (DataTestUtility.IsNotFabricDW())
+                    {
+                        rdr.GetFieldValueAsync<int>(6).Wait(); //ShipVia;
+                    }
+                    else
+                    {
+                        rdr.GetFieldValueAsync<long>(6).Wait(); //ShipVia;
+                    }
                     rdr.GetFieldValueAsync<decimal>(7).Wait(); //Freight;
                     rdr.GetFieldValueAsync<string>(8).Wait(); //ShipName;
                     rdr.GetFieldValueAsync<SqlString>(9).Wait(); //ShipAddres;
@@ -530,6 +560,7 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                     Decimal dd;
                     SqlString s = null;
                     SqlInt32 i;
+                    SqlInt64 l;
 
                     // read data out of buffer
                     i = rdr.GetSqlInt32(0); //order id
@@ -541,6 +572,7 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                         d = rdr.GetSqlDateTime(4); //RequiredDate
                         d = rdr.GetSqlDateTime(5); //ShippedDate;
                         m = rdr.GetSqlMoney(7); //Freight;
+                        i = rdr.GetSqlInt32(6); //ShipVia;
                     }
                     else
                     {
@@ -550,9 +582,8 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                         dt = rdr.GetDateTime(4); //RequiredDate
                         dt = rdr.GetDateTime(5); //ShippedDate;
                         dd = rdr.GetDecimal(7); //Freight;
+                        l = rdr.GetSqlInt64(6); //ShipVia;
                     }
-                    i = rdr.GetSqlInt32(6); //ShipVia;
-                    
                     s = rdr.GetSqlString(8); //ShipName;
                     s = rdr.GetSqlString(9); //ShipAddres;
                     s = rdr.GetSqlString(10); //ShipCity;
@@ -2089,7 +2120,7 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
             };
             string[] expectedColTypeNames =
             {
-                "int", "nchar", "int", "datetime", "datetime", "datetime", "int",
+                "int", "nchar", "int", "datetime", "datetime", "datetime", "bigint",
                 "money", "nvarchar", "nvarchar", "nvarchar", "nvarchar", "nvarchar", "nvarchar"
             };
 
