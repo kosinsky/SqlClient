@@ -19,7 +19,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
     {
         private char[] _appendNewLineIndentBuffer = new char[0];
 
-        // data value and server consts
+        // data value and server consts.
         private const string MagicName = "Magic";
         // Use a union statement so that Identity columns don't carry over
         private const string _createTableQuery = "select * into {0} from Employees where EmployeeID < 3 union all (select * from Employees where 1 = 0)";
@@ -243,7 +243,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         // Synapse: Create table statement contains a data type that is unsupported in Parallel Data Warehouse.
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse) , nameof(DataTestUtility.IsNotFabricDW))]
         public void SqlVariantTest()
         {
             string tableName = DataTestUtility.GenerateObjectName();
@@ -602,7 +602,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                     Assert.True(1 == dataSet.Tables[0].Rows.Count, "FAILED:  Expected 1 row to be loaded in the dataSet!");
 
                     DataRow row = dataSet.Tables[0].Rows[0];
-                    Assert.True((int)row["ShipperId"] == 2, "FAILED:  ShipperId column should be 2, not " + DBConvertToString(row["ShipperId"]));
+
+                    Assert.True((long)row["ShipperId"] == 2L, "FAILED:  ShipperId column should be 2, not " + DBConvertToString(row["ShipperId"]));
 
                     // remember to reset params
                     cmd.Parameters[0].Value = 2;
@@ -637,7 +638,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                     Assert.True(1 == dataSet.Tables[0].Rows.Count, "FAILED:  Expected 1 row to be loaded in the dataSet!");
 
                     row = dataSet.Tables[0].Rows[0];
-                    Assert.True((int)row["ShipperId"] == 1, "FAILED:  ShipperId column should be 1, not " + DBConvertToString(row["ShipperId"]));
+                    Assert.True((long)row["ShipperId"] == 1L, "FAILED:  ShipperId column should be 1, not " + DBConvertToString(row["ShipperId"]));
                 }
             }
             finally
@@ -663,6 +664,10 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 cmd.CommandText = string.Format(_createTableQuery, _tempTable);
                 cmd.ExecuteNonQuery();
                 cmd.CommandText = "alter table " + _tempTable + " add constraint " + _tempKey + " primary key (EmployeeID)";
+                if (DataTestUtility.IsFabricDW)
+                {
+                    cmd.CommandText = "alter table " + _tempTable + " add constraint " + _tempKey + " primary key NONCLUSTERED (EmployeeID) not enforced";
+                }
                 cmd.ExecuteNonQuery();
 
                 try
@@ -748,6 +753,10 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 cmd.CommandText = string.Format(_createTableQuery, _tempTable);
                 cmd.ExecuteNonQuery();
                 cmd.CommandText = "alter table " + _tempTable + " add constraint " + _tempKey + " primary key (EmployeeID)";
+                if (DataTestUtility.IsFabricDW)
+                {
+                    cmd.CommandText = "alter table " + _tempTable + " add constraint " + _tempKey + " primary key NONCLUSTERED (EmployeeID) not enforced";
+                }
                 cmd.ExecuteNonQuery();
 
                 try
@@ -833,14 +842,14 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         // Makes sure that we can refresh an identity column in the dataSet
         // for a newly inserted row
         // Synapse: Must declare the scalar variable "@@IDENTITY".
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public void UpdateRefreshTest()
         {
             string identTableName = DataTestUtility.GetShortName("ID_");
             string createIdentTable =
-                $"CREATE TABLE {identTableName} (id int IDENTITY," +
-                "LastName nvarchar(50) NULL," +
-                "Firstname nvarchar(50) NULL)";
+                $"CREATE TABLE {identTableName} (id bigint IDENTITY," +
+                "LastName varchar(50) NULL," +
+                "Firstname varchar(50) NULL)";
 
             string spName = DataTestUtility.GetShortName("sp_insert", withBracket: false);
             string spCreateInsert =
@@ -935,10 +944,10 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         {
             string tableName = DataTestUtility.GenerateObjectName();
             string procName = DataTestUtility.GenerateObjectName();
-            string createTable = "CREATE TABLE " + tableName + "(cvarbin VARBINARY(7000), cimage IMAGE)";
+            string createTable = "CREATE TABLE " + tableName + "(cvarbin VARBINARY(7000), cimage varbinary(max))";
 
             string createSP =
-                "CREATE PROCEDURE " + procName + " (@val_cvarbin VARBINARY(7000), @val_cimage IMAGE)" +
+                "CREATE PROCEDURE " + procName + " (@val_cvarbin VARBINARY(7000), @val_cimage varbinary(max))" +
                 "AS INSERT INTO " + tableName + " (cvarbin, cimage)" +
                 "VALUES (@val_cvarbin, @val_cimage)";
             bool dropSP = false;
@@ -992,10 +1001,10 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         {
             string tableName = DataTestUtility.GenerateObjectName();
             string procName = DataTestUtility.GenerateObjectName();
-            string createTable = "CREATE TABLE " + tableName + "(cvarbin VARBINARY(7000), cimage IMAGE)";
+            string createTable = "CREATE TABLE " + tableName + "(cvarbin VARBINARY(7000), cimage varbinary(max))";
 
             string createSP =
-                "CREATE PROCEDURE " + procName + " (@val_cvarbin VARBINARY(7000), @val_cimage IMAGE)" +
+                "CREATE PROCEDURE " + procName + " (@val_cvarbin VARBINARY(7000), @val_cimage varbinary(max))" +
                 "AS INSERT INTO " + tableName + " (cvarbin, cimage)" +
                 "VALUES (@val_cvarbin, @val_cimage)";
             bool dropSP = false;
@@ -1093,6 +1102,10 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 cmd.CommandText = string.Format(_createTableQuery, _tempTable);
                 cmd.ExecuteNonQuery();
                 cmd.CommandText = "alter table " + _tempTable + " add constraint " + _tempKey + " primary key (EmployeeID)";
+                if (DataTestUtility.IsFabricDW)
+                {
+                    cmd.CommandText = "alter table " + _tempTable + " add constraint " + _tempKey + " primary key NONCLUSTERED (EmployeeID) not enforced";
+                }
                 cmd.ExecuteNonQuery();
 
                 try
@@ -1157,9 +1170,9 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         {
             string identTableName = DataTestUtility.GetShortName("ID_");
             string createIdentTable =
-                $"CREATE TABLE {identTableName} (id int IDENTITY," +
-                "LastName nvarchar(50) NULL," +
-                "Firstname nvarchar(50) NULL)";
+                $"CREATE TABLE {identTableName} (id bigint IDENTITY," +
+                "LastName varchar(50) NULL," +
+                "Firstname varchar(50) NULL)";
 
             using (SqlConnection conn = new SqlConnection(DataTestUtility.TCPConnectionString))
             using (SqlCommand cmd = new SqlCommand($"SELECT * into {_tempTable} from {identTableName}", conn))
@@ -1212,7 +1225,11 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
                 cmd.CommandText = string.Format(_createTableQuery, _tempTable);
                 cmd.ExecuteNonQuery();
-                cmd.CommandText = "alter table " + _tempTable + " add constraint " + _tempKey + " primary key (EmployeeID)";
+                cmd.CommandText = "alter table " + _tempTable + " add constraint " + _tempKey + " primary key NONCLUSTERED (EmployeeID)";
+                if (DataTestUtility.IsFabricDW)
+                {
+                    cmd.CommandText = "alter table " + _tempTable + " add constraint " + _tempKey + " primary key NONCLUSTERED (EmployeeID) not enforced";
+                }
                 cmd.ExecuteNonQuery();
 
                 try
@@ -1289,7 +1306,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup) ,nameof(DataTestUtility.IsNotFabricDW))]
         public void TestDeriveParameters()
         {
             string procName = "Test_EmployeeSalesByCountry_" + _randomGuid + "";
