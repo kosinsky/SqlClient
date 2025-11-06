@@ -513,9 +513,9 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         public static bool IsSupportingDistributedTransactions()
         {
 #if NET8_0_OR_GREATER
-            return OperatingSystem.IsWindows() && System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture != System.Runtime.InteropServices.Architecture.X86 && IsNotAzureServer();
+            return OperatingSystem.IsWindows() && System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture != System.Runtime.InteropServices.Architecture.X86 && IsNotAzureServer() && IsNotFabricDW();
 #elif NETFRAMEWORK
-            return IsNotAzureServer();
+            return IsNotAzureServer() && IsNotFabricDW();
 #else
             return false;
 #endif

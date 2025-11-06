@@ -221,7 +221,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         private static void RunTestFormat(Action testCase)
         {
             TestTableName = DataTestUtility.GenerateObjectName();
-            DataTestUtility.RunNonQuery(ConnectionString, $"create table {TestTableName} (col1 int, col2 text)");
+            DataTestUtility.RunNonQuery(ConnectionString, $"create table {TestTableName} (col1 int, col2 varchar(max))");
             try
             {
                 testCase();
