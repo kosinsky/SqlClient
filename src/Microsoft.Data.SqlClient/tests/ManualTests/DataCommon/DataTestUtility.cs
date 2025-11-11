@@ -443,9 +443,10 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
         // Synapse: Always Encrypted is not supported with Azure Synapse.
         //          Ref: https://feedback.azure.com/forums/307516-azure-synapse-analytics/suggestions/17858869-support-always-encrypted-in-sql-data-warehouse
+        // Fabric DW: Always Encrypted is not supported with Fabric DW.
         public static bool AreConnStringSetupForAE()
         {
-            return AEConnStrings.Count > 0 && IsNotAzureSynapse();
+            return AEConnStrings.Count > 0 && IsNotAzureSynapse() && IsNotFabricDW();
         }
 
         public static bool IsSGXEnclaveConnStringSetup() => !string.IsNullOrEmpty(TCPConnectionStringAASSGX);
