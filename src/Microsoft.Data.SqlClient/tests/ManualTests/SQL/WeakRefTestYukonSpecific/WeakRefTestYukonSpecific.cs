@@ -17,8 +17,9 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         private const int CONCURRENT_COMMANDS = 5;
 
         // TODO Synapse: Remove dependency on Northwind database
+        // Fabric DW does not support MARS
         [ActiveIssue("6643", TestPlatforms.AnyUnix)]
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void TestReaderMars()
         {
             string connectionString =
@@ -50,7 +51,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             TestReaderMarsCase("Case 14: ExecuteReader*5 GC, Connection Close, BeginTransaction.", connectionString, ReaderTestType.ReaderGCConnectionClose, ReaderVerificationType.BeginTransaction);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        // Fabric DW does not support MARS
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         public static void TestTransactionSingle()
         {
             string connectionString =
