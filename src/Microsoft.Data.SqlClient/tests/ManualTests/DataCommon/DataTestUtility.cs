@@ -382,6 +382,13 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         /// <returns>True, if target SQL Server supports Data Classification</returns>
         public static bool IsSupportedDataClassification()
         {
+            if (IsFabricDW)
+            {
+                // SYS.SENSITIVITY_CLASSIFICATIONS table is visible in Fabric DW
+                // However, Data Classification feature is not supported
+                return false;
+            }
+
             try
             {
                 using (var connection = new SqlConnection(TCPConnectionString))
