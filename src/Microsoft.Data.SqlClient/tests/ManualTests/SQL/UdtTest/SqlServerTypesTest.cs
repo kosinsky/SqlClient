@@ -405,7 +405,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         // Synapse: Parse error at line: 1, column: 8: Incorrect syntax near 'geometry'.
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        // Fabric DW: 'hierarchyid', 'geography', and 'geometry' types are not supported in Fabric DW.
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void TestSqlServerTypesInsertAndRead()
         {
             string tableName = DataTestUtility.GetLongName("Type");
