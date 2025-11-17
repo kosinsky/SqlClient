@@ -75,7 +75,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         [ConditionalTheory(typeof(DataTestUtility),
          nameof(DataTestUtility.AreConnStringsSetup),
          nameof(DataTestUtility.IsNotAzureServer),
-         nameof(DataTestUtility.IsNotAzureSynapse))]
+         nameof(DataTestUtility.IsNotAzureSynapse),
+         nameof(DataTestUtility.IsNotFabricDW))]
         [InlineData(true, true)]
         [InlineData(false, true)]
         [InlineData(true, false)]
@@ -139,7 +140,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         [ConditionalTheory(typeof(DataTestUtility),
          nameof(DataTestUtility.AreConnStringsSetup),
          nameof(DataTestUtility.IsNotAzureServer),
-         nameof(DataTestUtility.IsNotAzureSynapse))]
+         nameof(DataTestUtility.IsNotAzureSynapse),
+         nameof(DataTestUtility.IsNotFabricDW))]
         [InlineData(true, true)]
         [InlineData(false, true)]
         [InlineData(true, false)]
