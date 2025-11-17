@@ -37,7 +37,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         //          Expected protocol TCP Provider in the error message, but received: A network-related or instance-specific error occurred while establishing a connection to SQL Server.
         //          The server was not found or was not accessible. Verify that the instance name is correct and that SQL Server is configured to allow remote connections. 
         //          (provider: Named Pipes Provider, error: 40 - Could not open a connection to SQL Server)
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        // Fabric DW: Named Pipes not supported for Fabric DW
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void NonAzureNoProtocolConnectionTestWindows()
         {
@@ -49,7 +50,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 #endif
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Linux)]
         public static void NonAzureNoProtocolConnectionTestLinux()
         {
