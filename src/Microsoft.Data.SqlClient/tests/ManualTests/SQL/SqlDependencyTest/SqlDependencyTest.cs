@@ -112,7 +112,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             dep.OnChange += tempDelegate;
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         public void SqlDependencyStartStopTest()
         {
             try
@@ -142,7 +142,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             Assert.Contains("connectionstring", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         public void SqlDependencyStartStopDefaultTest()
         {
             try
