@@ -29,6 +29,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
     }
 
+    // Fabric DW: Does not support UDT
     public class UdtDateTimeOffsetTest
     {
         private readonly string _connectionString = null;
@@ -42,7 +43,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         // This unit test is for the reported issue #2423 using a specific scale of 1
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public void SelectFromSqlParameterShouldSucceed()
         {
             using SqlConnection connection = new(_connectionString);
@@ -75,7 +76,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         // This unit test is to ensure that time in DateTimeOffset with all scales are working as expected
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public void DateTimeOffsetAllScalesTestShouldSucceed()
         {
             using SqlConnection connection = new(_connectionString);
