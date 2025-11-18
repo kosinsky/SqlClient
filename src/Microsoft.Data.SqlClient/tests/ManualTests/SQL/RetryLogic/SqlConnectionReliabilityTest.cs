@@ -71,7 +71,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 deltaTime: TimeSpan.FromSeconds(1));
 
         // avoid creating a new database in Azure
-        [ConditionalTheory(typeof(DataTestUtility), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalTheory(typeof(DataTestUtility), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         [MemberData(nameof(CreateDatabaseWhileTryingToConnect_Data), DisableDiscoveryEnumeration = true)]
         public void CreateDatabaseWhileTryingToConnect(string cnnString, SqlRetryLogicBaseProvider provider)
         {
