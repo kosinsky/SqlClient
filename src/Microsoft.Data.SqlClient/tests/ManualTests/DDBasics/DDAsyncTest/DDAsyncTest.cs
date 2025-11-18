@@ -60,7 +60,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
         #region <<ExecuteCommand_WithSharedConnection>>
         // Synapse: Parallel query execution on the same connection is not supported.
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        // Fabric DW: Parallel query execution (MARS) on the same connection is not supported.
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void ExecuteCommand_WithSharedConnection_ShouldPerformAsyncByDefault()
         {
             var executedProcessList = new List<string>();
