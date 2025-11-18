@@ -159,13 +159,15 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         public static TheoryData<string, SqlRetryLogicBaseProvider> DefaultOpenWithoutRetry_Data =>
             RetryLogicTestHelper.GetNonRetriableCases();
 
+        // Fabric DW: Database name is encoded as part of the server name, so invalid catalog error is not thrown.
         [ConditionalTheory(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
         [MemberData(nameof(DefaultOpenWithoutRetry_Data), DisableDiscoveryEnumeration = true)]
         public void DefaultOpenWithoutRetry(string connectionString, SqlRetryLogicBaseProvider cnnProvider)
         {
             var cnnString = new SqlConnectionStringBuilder(connectionString)
             {
-                InitialCatalog = InvalidInitialCatalog
+                InitialCatalog = InvalidInitialCatalog,
+                //IntegratedSecurity = DataTestUtility.IsFabricDW,
             }.ConnectionString;
 
             Assert.Throws<SqlException>(() => new SqlConnection(cnnString).Open());

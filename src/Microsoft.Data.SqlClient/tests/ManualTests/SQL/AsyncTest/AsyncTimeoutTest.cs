@@ -9,6 +9,7 @@ using System.Data;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Data.SqlClient.ManualTesting.Tests.SystemDataInternals;
+using Microsoft.DotNet.XUnitExtensions;
 using Xunit;
 
 namespace Microsoft.Data.SqlClient.ManualTesting.Tests
@@ -88,6 +89,18 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 MultipleActiveResultSets = marsEnabled
             }.ConnectionString;
 
+            if (DataTestUtility.IsFabricDW )
+            {
+                if (marsEnabled)
+                {
+                    throw new SkipTestException("MARS is not supported in Fabric DW.");
+                }
+                else if (api == AsyncAPI.ExecuteXmlReaderAsync)
+                {
+                    throw new SkipTestException("FOR XML is not supported in Fabric DW.");
+                }
+            }
+
             using (SqlConnection sqlConnection = new SqlConnection(connString))
             {
                 sqlConnection.Open();
@@ -131,7 +144,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                     cmd = cn.CreateCommand();
                     if (useTransaction)
                     {
-                        tx = cn.BeginTransaction(IsolationLevel.ReadCommitted);
+                        tx = cn.BeginTransaction(DataTestUtility.IsNotFabricDW() ? IsolationLevel.ReadCommitted : IsolationLevel.Snapshot);
                         cmd.Transaction = tx;
                     }
                 }
