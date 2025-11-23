@@ -9,7 +9,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
     public static class DDMARSTest
     {
         // TODO Synapse: Remove dependency from Northwind database
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        // Fabric DW does not support MARS
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void TestMain()
         {
             string connstr = (new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString) { MultipleActiveResultSets = true }).ConnectionString;

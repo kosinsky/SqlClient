@@ -195,7 +195,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         // Synapse: Parse error at line: 1, column: 27: Incorrect syntax near 'for'.
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public void ExecuteXmlReaderTest()
         {
             RemoteExecutor.Invoke(() =>
@@ -405,7 +405,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         // Synapse:  Parse error at line: 1, column: 27: Incorrect syntax near 'for'.
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        // Fabric DW: 'FOR XML' is not supported in this version of SQL.
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public void ExecuteXmlReaderAsyncTest()
         {
             // @TODO: TestTdsServer does not handle xml reader, so connect to a real server as a workaround
@@ -436,7 +437,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }).Dispose();
         }
 
-        [Fact]
+        // Fabric DW: 'FOR XML' is not supported in this version of SQL.
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         public void ExecuteXmlReaderAsyncErrorTest()
         {
             // @TODO: TestTdsServer does not handle xml reader, so connect to a real server as a workaround

@@ -37,7 +37,9 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         public static void UTF8databaseTest()
         {
             const string letters = @"!\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u007f€\u0081‚ƒ„…†‡ˆ‰Š‹Œ\u008dŽ\u008f\u0090‘’“”•–—˜™š›œ\u009džŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ";
-            string dbName = DataTestUtility.GetLongName("UTF8databaseTest", false);
+            string dbName = DataTestUtility.IsNotFabricDW() 
+                ? DataTestUtility.GetLongName("UTF8databaseTest", false)
+                : new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString).InitialCatalog;
             string tblName = "Table1";
 
             SqlConnectionStringBuilder builder = new(DataTestUtility.TCPConnectionString);
@@ -71,7 +73,10 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
             finally
             {
-                DataTestUtility.DropDatabase(cn, dbName);
+                if (DataTestUtility.IsNotFabricDW())
+                {
+                    DataTestUtility.DropDatabase(cn, dbName);
+                }
             }
         }
 
@@ -81,10 +86,15 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
             using SqlCommand cmd = cnn.CreateCommand();
 
-            cmd.CommandText = $"CREATE DATABASE [{dbName}] COLLATE Latin1_General_100_CI_AS_SC_UTF8;";
-            cmd.ExecuteNonQuery();
+            if (DataTestUtility.IsNotFabricDW())
+            {
+                cmd.CommandText = $"CREATE DATABASE [{dbName}] COLLATE Latin1_General_100_CI_AS_SC_UTF8;";
+                cmd.ExecuteNonQuery();
+            }
 
-            sb.AppendLine($"CREATE TABLE [{dbName}].dbo.[{tblName}] (col VARCHAR(7633) COLLATE Latin1_General_100_CI_AS_SC);");
+            string collation = DataTestUtility.IsNotFabricDW() ? "SQL_Latin1_General_CP1_CI_AS" : "Latin1_General_100_CI_AS_KS_WS_SC_UTF8";
+
+            sb.AppendLine($"CREATE TABLE [{dbName}].dbo.[{tblName}] (col VARCHAR(7633) COLLATE {collation});");
             sb.AppendLine($"INSERT INTO [{dbName}].dbo.[{tblName}] VALUES (@letters);");
 
             cmd.Parameters.Add(new SqlParameter("letters", letters));

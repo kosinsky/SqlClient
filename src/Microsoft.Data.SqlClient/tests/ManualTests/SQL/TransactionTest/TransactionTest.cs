@@ -22,7 +22,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 , new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString)
                 {
                     Pooling = true,
-                    MultipleActiveResultSets = true
+                    MultipleActiveResultSets = DataTestUtility.IsNotFabricDW()
                 }.ConnectionString
             };
 
@@ -37,7 +37,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 , new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString)
                 {
                     Pooling = false,
-                    MultipleActiveResultSets = true
+                    MultipleActiveResultSets = DataTestUtility.IsNotFabricDW()
                 }.ConnectionString
             };
 
@@ -88,7 +88,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                     }
                 }
 
-                if (DataTestUtility.IsNotAzureSynapse())
+                if (DataTestUtility.IsNotAzureSynapse() && DataTestUtility.IsNotFabricDW())
                 {
                     using (SqlConnection sqlConnection = new SqlConnection(connString))
                     using (SqlCommand cmd = new SqlCommand("SELECT TOP(1) 4 Clm0 FROM sysobjects FOR XML AUTO", sqlConnection))
@@ -109,7 +109,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
         public static void TestMain()
         {
-            new TransactionTestWorker((new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString) { MultipleActiveResultSets = true }).ConnectionString).StartTest();
+            new TransactionTestWorker((new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString) { MultipleActiveResultSets = DataTestUtility.IsNotFabricDW() }).ConnectionString).StartTest();
         }
 
         private sealed class TransactionTestWorker
@@ -144,11 +144,15 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                     ExceptionTest();
                     ResetTables();
 
-                    ReadUncommitedIsolationLevel_ShouldReturnUncommitedData();
-                    ResetTables();
+                    // Fabric DW: Only Snapshot isolation level is supported
+                    if (DataTestUtility.IsNotFabricDW())
+                    {
+                        ReadUncommitedIsolationLevel_ShouldReturnUncommitedData();
+                        ResetTables();
 
-                    ReadCommitedIsolationLevel_ShouldReceiveTimeoutExceptionBecauseItWaitsForUncommitedTransaction();
-                    ResetTables();
+                        ReadCommitedIsolationLevel_ShouldReceiveTimeoutExceptionBecauseItWaitsForUncommitedTransaction();
+                        ResetTables();
+                    }
                 }
                 finally
                 {
@@ -162,7 +166,11 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 using (var conn = new SqlConnection(_connectionString))
                 {
                     conn.Open();
-                    SqlCommand command = new SqlCommand(string.Format("CREATE TABLE [{0}]([CustomerID] [nchar](5) NOT NULL PRIMARY KEY, [CompanyName] [nvarchar](40) NOT NULL, [ContactName] [nvarchar](30) NULL)", _tempTableName1), conn);
+                    var cmdText = 
+                        DataTestUtility.IsNotFabricDW()
+                            ? string.Format("CREATE TABLE [{0}]([CustomerID] [nchar](5) NOT NULL PRIMARY KEY, [CompanyName] [nvarchar](40) NOT NULL, [ContactName] [nvarchar](30) NULL)", _tempTableName1)
+                            : string.Format("CREATE TABLE [{0}]([CustomerID] [char](5) NOT NULL, [CompanyName] [varchar](40) NOT NULL, [ContactName] [varchar](30) NULL)", _tempTableName1);
+                    SqlCommand command = new SqlCommand(cmdText, conn);
                     command.ExecuteNonQuery();
                     command.CommandText = "create table " + _tempTableName2 + "(col1 int, col2 varchar(32))";
                     command.ExecuteNonQuery();
@@ -174,7 +182,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 using (var conn = new SqlConnection(_connectionString))
                 {
                     SqlCommand command = new SqlCommand(
-                            string.Format("DROP TABLE [{0}]; DROP TABLE [{1}]", _tempTableName1, _tempTableName2), conn);
+                            string.Format("DROP TABLE IF EXISTS [{0}]; DROP TABLE IF EXISTS [{1}]", _tempTableName1, _tempTableName2), conn);
                     conn.Open();
                     command.ExecuteNonQuery();
                 }

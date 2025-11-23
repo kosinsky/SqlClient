@@ -12,7 +12,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 {
     public static class AdjustPrecScaleForBulkCopy
     {
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        // Fabric DW: INSERT BULK not supported
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         public static void RunTest()
         {
             using LocalAppContextSwitchesHelper appContextSwitches = new();

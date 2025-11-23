@@ -139,7 +139,14 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 conn.Open();
                 SqlCommand cmd = new SqlCommand(string.Format("SELECT EmployeeID, LastName, FirstName, Title, Address, City, Region, PostalCode, Country into {0} from Employees", tempTableName), conn);
                 cmd.ExecuteNonQuery();
-                cmd.CommandText = string.Format("alter table {0} add constraint EmployeeID_{1} primary key (EmployeeID)", tempTableName, uniqueKey);
+                if (DataTestUtility.IsNotFabricDW())
+                {
+                    cmd.CommandText = string.Format("alter table {0} add constraint EmployeeID_{1} primary key (EmployeeID)", tempTableName, uniqueKey);
+                }
+                else
+                {
+                    cmd.CommandText = string.Format("alter table {0} add constraint EmployeeID_{1} primary key NONCLUSTERED (EmployeeID) not enforced", tempTableName, uniqueKey);
+                }
                 cmd.ExecuteNonQuery();
             }
 

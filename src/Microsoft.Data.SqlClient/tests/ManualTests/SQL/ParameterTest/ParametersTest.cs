@@ -258,7 +258,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         // Synapse: Parse error at line: 1, column: 8: Incorrect syntax near 'TYPE'.
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        // Fabric DW: TVP not supported
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void TestParametersWithDatatablesTVPInsert()
         {
             SqlConnectionStringBuilder builder = new(DataTestUtility.TCPConnectionString);
@@ -326,7 +327,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
 #if !NETFRAMEWORK
         // Synapse: Parse error at line: 1, column: 8: Incorrect syntax near 'TYPE'.
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        // Fabric DW: TVP not supported
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void TestParametersWithSqlRecordsTVPInsert()
         {
             SqlConnectionStringBuilder builder = new(DataTestUtility.TCPConnectionString);
@@ -409,7 +411,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        // Fabric DW: TVP not supported
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void TestDateOnlyTVPDataTable_CommandSP()
         {
             string tableTypeName = "[dbo]." + DataTestUtility.GetLongName("UDTTTestDateOnlyTVP");
@@ -457,7 +460,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        // Fabric DW: TVP not supported
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void TestDateOnlyTVPSqlDataRecord_CommandSP()
         {
             string tableTypeName = "[dbo]." + DataTestUtility.GetLongName("UDTTTestDateOnlySqlDataRecordTVP");
@@ -612,7 +616,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [Theory]
+        [ConditionalTheory(typeof(DataTestUtility), nameof(DataTestUtility.IsNotFabricDW))]
         [ClassData(typeof(ConnectionStringsProvider))]
         public static void TestScaledDecimalParameter_BulkCopy(string connectionString, bool truncateScaledDecimal)
         {
@@ -648,7 +652,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
         // Synapse: Parse error at line: 2, column: 8: Incorrect syntax near 'TYPE'.
-        [ConditionalTheory(typeof(DataTestUtility), nameof(DataTestUtility.IsNotAzureSynapse))]
+        // Fabric DW: TVP not supported
+        [ConditionalTheory(typeof(DataTestUtility), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         [ClassData(typeof(ConnectionStringsProvider))]
         public static void TestScaledDecimalTVP_CommandSP(string connectionString, bool truncateScaledDecimal)
         {

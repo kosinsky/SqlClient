@@ -20,7 +20,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 {
     public static class DataStreamTest
     {
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         public static void RunAllTestsForSingleServer_NP()
         {
             // @TODO: Split into separate tests! Or why even bother running this test on non-windows, the error comes from something other than data stream!
@@ -186,7 +186,8 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
             // those contexts.
             var dataSource = new SqlConnectionStringBuilder(connectionString).DataSource;
             if (!Utils.IsAzureSqlServer(dataSource)
-                && !dataSource.Contains(@"\"))
+                && !dataSource.Contains(@"\")
+                && DataTestUtility.IsNotFabricDW())
             {
                 TestXEventsStreaming(connectionString);
 
@@ -287,7 +288,7 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                string sqlBatch = "select * from orders where orderid < 10253";
+                string sqlBatch = "select * from orders where orderid < 10253 order by orderid asc";
                 using (SqlCommand cmd = new SqlCommand(sqlBatch, conn))
                 using (SqlDataReader rdr = cmd.ExecuteReader())
                 {
@@ -298,6 +299,7 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                     decimal m;
                     string s = null;
                     int i;
+                    long l;
 
                     // read data out of buffer
                     v = rdr.GetValue(0);
@@ -313,7 +315,14 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                     v = rdr.GetValue(5);
                     d = (DateTime)v;
                     v = rdr.GetValue(6);
-                    i = (int)v;
+                    if (DataTestUtility.IsFabricDW)
+                    {
+                        l = (long)v;
+                    }
+                    else
+                    {
+                        i = (int)v;
+                    }
                     v = rdr.GetValue(7);
                     m = (decimal)v;
                     v = rdr.GetValue(8);
@@ -339,7 +348,7 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                string sqlBatch = "select * from orders where orderid < 10253";
+                string sqlBatch = "select * from orders where orderid < 10253 order by orderid asc";
                 using (SqlCommand cmd = new SqlCommand(sqlBatch, conn))
                 using (SqlDataReader rdr = cmd.ExecuteReader())
                 {
@@ -349,6 +358,7 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                     decimal m;
                     string s = null;
                     int i;
+                    long l;
 
                     // read data out of buffer
                     i = rdr.GetInt32(0); //order id
@@ -357,7 +367,14 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                     d = rdr.GetDateTime(3); //OrderDate
                     d = rdr.GetDateTime(4); //RequiredDate
                     d = rdr.GetDateTime(5); //ShippedDate;
-                    i = rdr.GetInt32(6); //ShipVia;
+                    if (DataTestUtility.IsFabricDW)
+                    {
+                        l = rdr.GetInt64(6); //ShipVia;
+                    }
+                    else
+                    {
+                        i = rdr.GetInt32(6); //ShipVia;
+                    }
                     m = rdr.GetDecimal(7); //Freight;
                     s = rdr.GetString(8); //ShipName;
                     s = rdr.GetString(9); //ShipAddres;
@@ -379,6 +396,10 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
             {
                 conn.Open();
                 string sqlBatch = "select *, CAST(N'<test>Hello, World</test>' AS XML), CAST(NULL AS XML) from orders where orderid < 10253 and shipregion is null";
+                if (DataTestUtility.IsFabricDW)
+                {
+                    sqlBatch = sqlBatch.Replace("XML", "VARCHAR(MAX)");
+                }
                 using (SqlCommand cmd = new SqlCommand(sqlBatch, conn))
                 using (SqlDataReader rdr = cmd.ExecuteReader())
                 {
@@ -390,9 +411,23 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                     rdr.GetFieldValue<string>(1); //customer id
                     rdr.GetFieldValue<SqlInt32>(2); // employee id
                     rdr.GetFieldValue<DateTime>(3); //OrderDate
-                    rdr.GetFieldValue<SqlDateTime>(4); //RequiredDate
+                    if (DataTestUtility.IsNotFabricDW())
+                    {
+                        rdr.GetFieldValue<SqlDateTime>(4); //RequiredDate
+                    }
+                    else
+                    {
+                        rdr.GetFieldValue<DateTime>(4); //RequiredDate
+                    }
                     rdr.GetFieldValue<DateTime>(5); //ShippedDate;
-                    rdr.GetFieldValue<int>(6); //ShipVia;
+                    if (DataTestUtility.IsNotFabricDW())
+                    {
+                        rdr.GetFieldValue<int>(6); //ShipVia;
+                    }
+                    else
+                    {
+                        rdr.GetFieldValue<long>(6); //ShipVia;
+                    }
                     rdr.GetFieldValue<decimal>(7); //Freight;
                     rdr.GetFieldValue<string>(8); //ShipName;
                     rdr.GetFieldValue<SqlString>(9); //ShipAddres;
@@ -417,9 +452,23 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                     rdr.GetFieldValueAsync<string>(1).Wait(); //customer id
                     rdr.GetFieldValueAsync<SqlInt32>(2).Wait(); // employee id
                     rdr.GetFieldValueAsync<DateTime>(3).Wait(); //OrderDate
-                    rdr.GetFieldValueAsync<SqlDateTime>(4).Wait(); //RequiredDate
+                    if (DataTestUtility.IsNotFabricDW())
+                    {
+                        rdr.GetFieldValueAsync<SqlDateTime>(4).Wait(); //RequiredDate
+                    }
+                    else
+                    {
+                        rdr.GetFieldValueAsync<DateTime>(4).Wait(); //RequiredDate
+                    }
                     rdr.GetFieldValueAsync<DateTime>(5).Wait(); //ShippedDate;
-                    rdr.GetFieldValueAsync<int>(6).Wait(); //ShipVia;
+                    if (DataTestUtility.IsNotFabricDW())
+                    {
+                        rdr.GetFieldValueAsync<int>(6).Wait(); //ShipVia;
+                    }
+                    else
+                    {
+                        rdr.GetFieldValueAsync<long>(6).Wait(); //ShipVia;
+                    }
                     rdr.GetFieldValueAsync<decimal>(7).Wait(); //Freight;
                     rdr.GetFieldValueAsync<string>(8).Wait(); //ShipName;
                     rdr.GetFieldValueAsync<SqlString>(9).Wait(); //ShipAddres;
@@ -436,14 +485,17 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
                     rdr.GetChars(12, 0, null, 0, 0);
                     rdr.IsDBNullAsync(12).Wait();
                     rdr.GetFieldValueAsync<INullable>(13).Wait(); //ShipCountry;
-                    rdr.GetFieldValue<SqlXml>(14);
-                    rdr.GetFieldValue<SqlXml>(15);
+                    if (DataTestUtility.IsNotFabricDW())
+                    {
+                        rdr.GetFieldValue<SqlXml>(14);
+                        rdr.GetFieldValue<SqlXml>(15);
+                        rdr.GetFieldValue<XmlReader>(14);
+                        rdr.GetFieldValue<XmlReader>(15);
+                        rdr.GetFieldValueAsync<XmlReader>(14);
+                        rdr.GetFieldValueAsync<XmlReader>(15);
+                    }
                     rdr.GetFieldValue<SqlString>(14);
                     rdr.GetFieldValue<SqlString>(15);
-                    rdr.GetFieldValue<XmlReader>(14);
-                    rdr.GetFieldValue<XmlReader>(15);
-                    rdr.GetFieldValueAsync<XmlReader>(14);
-                    rdr.GetFieldValueAsync<XmlReader>(15);
 
                     rdr.Read();
                     Assert.True(rdr.IsDBNullAsync(11).Result, "FAILED: IsDBNull was false for a null value");
@@ -497,25 +549,41 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                using (SqlCommand cmd = new SqlCommand("select * from orders where orderid < 10253", conn))
+                using (SqlCommand cmd = new SqlCommand("select * from orders where orderid < 10253 order by orderid asc", conn))
                 using (SqlDataReader rdr = cmd.ExecuteReader())
                 {
                     rdr.Read();
 
                     SqlDateTime d;
+                    DateTime dt;
                     SqlMoney m;
+                    Decimal dd;
                     SqlString s = null;
                     SqlInt32 i;
+                    SqlInt64 l;
 
                     // read data out of buffer
                     i = rdr.GetSqlInt32(0); //order id
                     s = rdr.GetSqlString(1); //customer id
                     i = rdr.GetSqlInt32(2); // employee id
-                    d = rdr.GetSqlDateTime(3); //OrderDate
-                    d = rdr.GetSqlDateTime(4); //RequiredDate
-                    d = rdr.GetSqlDateTime(5); //ShippedDate;
-                    i = rdr.GetSqlInt32(6); //ShipVia;
-                    m = rdr.GetSqlMoney(7); //Freight;
+                    if (DataTestUtility.IsNotFabricDW())
+                    {
+                        d = rdr.GetSqlDateTime(3); //OrderDate
+                        d = rdr.GetSqlDateTime(4); //RequiredDate
+                        d = rdr.GetSqlDateTime(5); //ShippedDate;
+                        m = rdr.GetSqlMoney(7); //Freight;
+                        i = rdr.GetSqlInt32(6); //ShipVia;
+                    }
+                    else
+                    {
+                        // Fabric DW does not support datetime mapped to SqlDateTime. Only datetime2(x) mapped to DateTime is supported
+                        // Fabric DW does not support money, only decimal is supported
+                        dt = rdr.GetDateTime(3); //OrderDate
+                        dt = rdr.GetDateTime(4); //RequiredDate
+                        dt = rdr.GetDateTime(5); //ShippedDate;
+                        dd = rdr.GetDecimal(7); //Freight;
+                        l = rdr.GetSqlInt64(6); //ShipVia;
+                    }
                     s = rdr.GetSqlString(8); //ShipName;
                     s = rdr.GetSqlString(9); //ShipAddres;
                     s = rdr.GetSqlString(10); //ShipCity;
@@ -686,6 +754,12 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
 
         private static void ExecuteXmlReaderTest(string connectionString)
         {
+            if (DataTestUtility.IsFabricDW)
+            {
+                // FOR XML is not supported in Fabric DW
+                return;
+            }
+
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
@@ -815,6 +889,12 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
 
         private static void SequentialAccess(string connectionString)
         {
+            if (DataTestUtility.IsFabricDW)
+            {
+                // FOR XML is not supported in Fabric DW
+                return;
+            }
+
             SqlDataReader reader;
             string s;
             int size = 4096; // some random chunk size
@@ -2040,9 +2120,28 @@ CREATE TABLE {tableName} (id INT, foo VARBINARY(MAX))
             };
             string[] expectedColTypeNames =
             {
-                "int", "nchar", "int", "datetime", "datetime", "datetime", "int",
+                "int", "nchar", "int", "datetime", "datetime", "datetime", "bigint",
                 "money", "nvarchar", "nvarchar", "nvarchar", "nvarchar", "nvarchar", "nvarchar"
             };
+
+            if (DataTestUtility.IsFabricDW)
+            {
+                for(int i = 0; i< expectedColTypeNames.Length; i++)
+                {
+                    if (expectedColTypeNames[i] == "money")
+                    {
+                        expectedColTypeNames[i] = "decimal";
+                    }
+                    else if (expectedColTypeNames[i] == "nchar" || expectedColTypeNames[i] == "nvarchar")
+                    {
+                        expectedColTypeNames[i] = expectedColTypeNames[i].Replace("n","");
+                    }
+                    else if (expectedColTypeNames[i] == "datetime")
+                    {
+                        expectedColTypeNames[i] = "datetime2";
+                    }
+                }
+            }
 
             for (int i = 0; i < reader.FieldCount; i++)
             {

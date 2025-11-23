@@ -17,7 +17,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
     {
         private const char SemicolonSeparator = ';';
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW), nameof(DataTestUtility.AreConnStringsSetup))]
         public static void ConnectToSQLWithInstanceNameTest()
         {
             SqlConnectionStringBuilder builder = new(DataTestUtility.TCPConnectionString);

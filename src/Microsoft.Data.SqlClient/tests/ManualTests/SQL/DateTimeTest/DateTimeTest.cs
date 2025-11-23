@@ -853,7 +853,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalTheory(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        // Fabric DW: INSERT BULK is not supported in Fabric DW. datetime, datetiemoffset and time(X) when X==7 are not supported.
+        [ConditionalTheory(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         [InlineData(true)]
         [InlineData(false)]
         public static void BulkCopyTest(bool useReader)

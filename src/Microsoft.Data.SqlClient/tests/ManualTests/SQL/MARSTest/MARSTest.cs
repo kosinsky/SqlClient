@@ -12,6 +12,7 @@ using Xunit;
 
 namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 {
+    // Fabric DW: MARS is not supported
     public static class MARSTest
     {
         private static readonly string _connStr = (new SqlConnectionStringBuilder(DataTestUtility.TCPConnectionString) { MultipleActiveResultSets = true }).ConnectionString;
@@ -49,7 +50,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             { 29, "Forêts d'érables" },
         };
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotFabricDW))]
         [PlatformSpecific(TestPlatforms.Windows)]
         public static void NamedPipesMARSTest()
         {
@@ -69,7 +70,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 
 #if DEBUG
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void MARSAsyncTimeoutTest()
         {
             using (SqlConnection connection = new SqlConnection(_connStr))
@@ -109,7 +110,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         public static void MARSSyncTimeoutTest()
         {
             using (SqlConnection connection = new SqlConnection(_connStr))
@@ -163,7 +164,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         }
 #endif
         // Synapse: Parallel query execution on the same connection is not supported.
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static async Task MARSAsyncBusyReaderTest()
         {
             using SqlConnection con = new(_connStr);
@@ -206,7 +207,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             Assert.True(!reader1.Read() && !reader2.Read(), "MARS read should not have returned more rows");
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         public static void MARSSyncBusyReaderTest()
         {
             var query = "SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10";
@@ -254,7 +255,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static async Task MARSAsyncExecuteNonQueryTest()
         {
             using SqlConnection con = new(_connStr);
@@ -279,7 +280,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             await result5;
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         public static void MARSSyncExecuteNonQueryTest()
         {
             using (SqlConnection conn = new SqlConnection(_connStr))
@@ -301,7 +302,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static async Task MARSAsyncExecuteReaderTest1()
         {
             using SqlConnection con = new(_connStr);
@@ -361,7 +362,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             Assert.Equal(830, rows);
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         public static void MARSSyncExecuteReaderTest1()
         {
             var query = "SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10";
@@ -415,7 +416,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static async Task MARSAsyncExecuteReaderTest2()
         {
             using SqlConnection con = new(_connStr);
@@ -447,7 +448,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             Assert.False(reader1.Read() || reader2.Read() || reader3.Read() || reader4.Read() || reader5.Read(), "MARSSyncExecuteReaderTest2 Failure #2");
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         public static void MARSSyncExecuteReaderTest2()
         {
             using (SqlConnection conn = new SqlConnection(_connStr))
@@ -466,7 +467,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static async Task MARSAsyncExecuteReaderTest3()
         {
             using SqlConnection con = new(_connStr);
@@ -502,7 +503,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             Assert.False(reader1.Read() || reader2.Read() || reader3.Read() || reader4.Read() || reader5.Read(), "MARSSyncExecuteReaderTest2 Failure #2");
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         public static void MARSSyncExecuteReaderTest3()
         {
             using (SqlConnection conn = new SqlConnection(_connStr))
@@ -528,7 +529,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static async Task MARSAsyncExecuteReaderTest4()
         {
             using SqlConnection con = new(_connStr);
@@ -553,7 +554,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             Assert.Equal(10250, reader3.GetInt32(0));
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         public static void MARSSyncExecuteReaderTest4()
         {
             using (SqlConnection conn = new SqlConnection(_connStr))
@@ -575,7 +576,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         public static void MARSMultiDataReaderErrTest()
         {
             string queryString = "SELECT 1";
@@ -620,7 +621,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static async Task MarsScenarioClientJoin()
         {
             SqlConnectionStringBuilder builder = new(_connStr);
@@ -644,7 +645,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
-        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse))]
+        [ConditionalFact(typeof(DataTestUtility), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.IsNotFabricDW))]
         public static void MarsConcurrencyTest()
         {
             var table = DataTestUtility.GenerateObjectName();

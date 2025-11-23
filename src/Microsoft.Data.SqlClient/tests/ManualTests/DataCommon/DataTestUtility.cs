@@ -107,6 +107,20 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             }
         }
 
+        // Fabric DW EngineEditionId == 11
+        public static bool IsFabricDW
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(TCPConnectionString))
+                {
+                    s_sqlServerEngineEdition ??= GetSqlServerProperty(TCPConnectionString, "EngineEdition");
+                }
+                _ = int.TryParse(s_sqlServerEngineEdition, out int engineEditon);
+                return engineEditon == 11;
+            }
+        }
+
         public static bool TcpConnectionStringDoesNotUseAadAuth
         {
             get
@@ -234,8 +248,8 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             {
                 yield return TCPConnectionString;
             }
-            // Named Pipes are not supported on Unix platform and for Azure DB
-            if (Environment.OSVersion.Platform != PlatformID.Unix && IsNotAzureServer() && !string.IsNullOrEmpty(NPConnectionString))
+            // Named Pipes are not supported on Unix platform, for Azure DB and for Fabric DW
+            if (Environment.OSVersion.Platform != PlatformID.Unix && IsNotAzureServer() && !string.IsNullOrEmpty(NPConnectionString) && IsNotFabricDW())
             {
                 yield return NPConnectionString;
             }
@@ -368,6 +382,13 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         /// <returns>True, if target SQL Server supports Data Classification</returns>
         public static bool IsSupportedDataClassification()
         {
+            if (IsFabricDW)
+            {
+                // SYS.SENSITIVITY_CLASSIFICATIONS table is visible in Fabric DW
+                // However, Data Classification feature is not supported
+                return false;
+            }
+
             try
             {
                 using (var connection = new SqlConnection(TCPConnectionString))
@@ -401,8 +422,11 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
         public static bool IsNotManagedInstance() => !IsManagedInstance;
 
+
+        public static bool IsNotFabricDW() => !IsFabricDW;
+
         // Synapse: UDT Test Database not compatible with Azure Synapse.
-        public static bool IsUdtTestDatabasePresent() => IsDatabasePresent(UdtTestDbName) && IsNotAzureSynapse();
+        public static bool IsUdtTestDatabasePresent() => IsDatabasePresent(UdtTestDbName) && IsNotAzureSynapse() && IsNotFabricDW();
 
         public static bool AreConnStringsSetup()
         {
@@ -426,9 +450,10 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
 
         // Synapse: Always Encrypted is not supported with Azure Synapse.
         //          Ref: https://feedback.azure.com/forums/307516-azure-synapse-analytics/suggestions/17858869-support-always-encrypted-in-sql-data-warehouse
+        // Fabric DW: Always Encrypted is not supported with Fabric DW.
         public static bool AreConnStringSetupForAE()
         {
-            return AEConnStrings.Count > 0 && IsNotAzureSynapse();
+            return AEConnStrings.Count > 0 && IsNotAzureSynapse() && IsNotFabricDW();
         }
 
         public static bool IsSGXEnclaveConnStringSetup() => !string.IsNullOrEmpty(TCPConnectionStringAASSGX);
@@ -496,9 +521,9 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         public static bool IsSupportingDistributedTransactions()
         {
 #if NET8_0_OR_GREATER
-            return OperatingSystem.IsWindows() && System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture != System.Runtime.InteropServices.Architecture.X86 && IsNotAzureServer();
+            return OperatingSystem.IsWindows() && System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture != System.Runtime.InteropServices.Architecture.X86 && IsNotAzureServer() && IsNotFabricDW();
 #elif NETFRAMEWORK
-            return IsNotAzureServer();
+            return IsNotAzureServer() && IsNotFabricDW();
 #else
             return false;
 #endif
@@ -691,6 +716,12 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
         /// </returns>
         public static string GetLongName(string prefix, bool withBracket = true)
         {
+            if (IsFabricDW && prefix.StartsWith("##"))
+            {
+                // Fabric DW does not support global temporary tables.
+                prefix = prefix.Substring(1);
+            }
+
             StringBuilder name = new(96);
 
             if (withBracket)

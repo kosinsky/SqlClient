@@ -85,7 +85,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 Assert.Equal(numberOfTries, ex.InnerExceptions.Count);
                 Assert.Contains(string.Format(_exceedErrMsgPattern, numberOfTries), ex.Message);
 
-                if (!DataTestUtility.IsAzureSynapse)
+                if (!DataTestUtility.IsAzureSynapse && DataTestUtility.IsNotFabricDW())
                 {
                     cmd.CommandText = query + " FOR XML AUTO";
                     ex = Assert.Throws<AggregateException>(() => cmd.ExecuteXmlReader());
@@ -135,7 +135,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 Assert.Equal(cancelAfterRetries, ex.InnerExceptions.Count);
                 Assert.Contains(string.Format(_cancelErrMsgPattern, currentRetries), ex.Message);
 
-                if (DataTestUtility.IsNotAzureSynapse())
+                if (DataTestUtility.IsNotAzureSynapse() && DataTestUtility.IsNotFabricDW())
                 {
                     cmd.CommandText = query + " FOR XML AUTO";
                     ex = Assert.Throws<AggregateException>(() => cmd.ExecuteXmlReader());
@@ -178,9 +178,12 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 Assert.Throws<SqlException>(() => cmd.ExecuteNonQuery());
                 Assert.Equal(0, currentRetries);
 
-                cmd.CommandText = query + " FOR XML AUTO";
-                Assert.Throws<SqlException>(() => cmd.ExecuteXmlReader());
-                Assert.Equal(0, currentRetries);
+                if (DataTestUtility.IsNotFabricDW())
+                {
+                    cmd.CommandText = query + " FOR XML AUTO";
+                    Assert.Throws<SqlException>(() => cmd.ExecuteXmlReader());
+                    Assert.Equal(0, currentRetries);
+                }
 
                 transScope.Complete();
             }
@@ -220,9 +223,12 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 Assert.Throws<SqlException>(() => cmd.ExecuteNonQuery());
                 Assert.Equal(0, currentRetries);
 
-                cmd.CommandText = query + " FOR XML AUTO";
-                Assert.Throws<SqlException>(() => cmd.ExecuteXmlReader());
-                Assert.Equal(0, currentRetries);
+                if (DataTestUtility.IsNotFabricDW())
+                {
+                    cmd.CommandText = query + " FOR XML AUTO";
+                    Assert.Throws<SqlException>(() => cmd.ExecuteXmlReader());
+                    Assert.Equal(0, currentRetries);
+                }
 
                 tran.Commit();
             }
@@ -296,7 +302,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 transientErrorCodes: RetryLogicTestHelper.GetDefaultTransientErrorCodes(3702));
 
         // avoid creating a new database in Azure
-        [ConditionalTheory(typeof(DataTestUtility), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.AreConnStringsSetup))]
+        [ConditionalTheory(typeof(DataTestUtility), nameof(DataTestUtility.IsNotAzureServer), nameof(DataTestUtility.IsNotAzureSynapse), nameof(DataTestUtility.AreConnStringsSetup), nameof(DataTestUtility.IsNotFabricDW))]
         [MemberData(nameof(DropDatabaseWithActiveConnection_Data), DisableDiscoveryEnumeration = true)]
         public void DropDatabaseWithActiveConnection(string cnnString, SqlRetryLogicBaseProvider provider)
         {
@@ -446,7 +452,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 Assert.ThrowsAsync<SqlException>(() => cmd.ExecuteReaderAsync(CommandBehavior.Default)).Wait();
                 Assert.ThrowsAsync<SqlException>(() => cmd.ExecuteNonQueryAsync()).Wait();
 
-                if (DataTestUtility.IsNotAzureSynapse())
+                if (DataTestUtility.IsNotAzureSynapse() && DataTestUtility.IsNotFabricDW())
                 {
                     cmd.CommandText = query + " FOR XML AUTO";
                     Assert.Throws<SqlException>(() => cmd.ExecuteXmlReader());
@@ -512,7 +518,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 Assert.Equal(numberOfTries, ex.InnerExceptions.Count);
                 Assert.Contains(string.Format(_exceedErrMsgPattern, numberOfTries), ex.Message);
 
-                if (DataTestUtility.IsNotAzureSynapse())
+                if (DataTestUtility.IsNotAzureSynapse() && DataTestUtility.IsNotFabricDW())
                 {
                     cmd.CommandText = query + " FOR XML AUTO";
                     ex = await Assert.ThrowsAsync<AggregateException>(() => cmd.ExecuteXmlReaderAsync());
@@ -582,7 +588,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
                 Assert.Equal(cancelAfterRetries, ex.InnerExceptions.Count);
                 Assert.Contains(string.Format(_cancelErrMsgPattern, currentRetries), ex.Message);
 
-                if (DataTestUtility.IsNotAzureSynapse())
+                if (DataTestUtility.IsNotAzureSynapse() && DataTestUtility.IsNotFabricDW())
                 {
                     cmd.CommandText = query + " FOR XML AUTO";
                     ex = await Assert.ThrowsAsync<AggregateException>(() => cmd.ExecuteXmlReaderAsync());
@@ -616,7 +622,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             ProcessDataInParallel(cnnString, provider, query, cmd => cmd.ExecuteReader());
             ProcessDataInParallel(cnnString, provider, query, cmd => cmd.ExecuteXmlReader());
 
-            if (DataTestUtility.IsNotAzureSynapse())
+            if (DataTestUtility.IsNotAzureSynapse() && DataTestUtility.IsNotFabricDW())
             {
                 query += " FOR XML AUTO";
                 ProcessDataInParallel(cnnString, provider, query, cmd => cmd.ExecuteXmlReader());
@@ -638,7 +644,7 @@ namespace Microsoft.Data.SqlClient.ManualTesting.Tests
             await ProcessDataAsAsync(cnnString, provider, query, cmd => cmd.ExecuteReaderAsync());
             await ProcessDataAsAsync(cnnString, provider, query, cmd => cmd.ExecuteXmlReaderAsync());
 
-            if (DataTestUtility.IsNotAzureSynapse())
+            if (DataTestUtility.IsNotAzureSynapse() && DataTestUtility.IsNotFabricDW())
             {
                 query += " FOR XML AUTO";
                 await ProcessDataAsAsync(cnnString, provider, query, cmd => cmd.ExecuteXmlReaderAsync());
